@@ -22,19 +22,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   }
 }
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode
-  params: Promise<{ locale: string }>
-}) {
-  const { locale } = await params
-  const validLocale: Locale = locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale
-
-  return (
-    <html lang={validLocale}>
-      <body>{children}</body>
-    </html>
-  )
+// ⚠️ Do NOT render <html> or <body> here — the root layout owns those.
+// This layout only handles per-locale metadata and generateStaticParams.
+export default function LocaleLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }

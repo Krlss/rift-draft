@@ -28,7 +28,35 @@ function getSocket(): Socket {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────
-const POSITION_NAMES = ['Top', 'Jungla', 'Mid', 'Bot', 'Support']
+// Mutable arrays updated by DraftPage when dictionary changes.
+// All sub-components read from these without needing prop drilling.
+const POSITION_NAMES: string[] = ['Top', 'Jungle', 'Mid', 'Bot', 'Support']
+const ROLE_LABEL: Record<string, string> = {
+  player_blue_1: 'Blue · Top', player_blue_2: 'Blue · Jungle',
+  player_blue_3: 'Blue · Mid', player_blue_4: 'Blue · Bot', player_blue_5: 'Blue · Support',
+  player_red_1:  'Red · Top',  player_red_2:  'Red · Jungle',
+  player_red_3:  'Red · Mid',  player_red_4:  'Red · Bot',  player_red_5:  'Red · Support',
+  coach_blue: 'Coach 🔵', coach_red: 'Coach 🔴',
+  spectator: 'Spectator', admin: 'Admin',
+}
+function syncLabels(t: Dictionary) {
+  const p = t.lobby
+  POSITION_NAMES.splice(0, 5, p.positionTop, p.positionJungle, p.positionMid, p.positionBot, p.positionSupport)
+  const sides = [
+    [p.roleBlueSide, 'blue'],
+    [p.roleRedSide,  'red'],
+  ] as const
+  for (const [side, team] of sides) {
+    const pos = [p.positionTop, p.positionJungle, p.positionMid, p.positionBot, p.positionSupport]
+    pos.forEach((position, i) => {
+      ROLE_LABEL[`player_${team}_${i + 1}`] = `${side} · ${position}`
+    })
+  }
+  ROLE_LABEL.coach_blue  = `Coach 🔵`
+  ROLE_LABEL.coach_red   = `Coach 🔴`
+  ROLE_LABEL.spectator   = p.roleSpectator
+  ROLE_LABEL.admin       = p.roleAdmin.replace(' (sin slot)', '').replace(' (no slot)', '')
+}
 const SOLO_MODE = process.env.NEXT_PUBLIC_SOLO_MODE === 'true'
 const GITHUB_URL = 'https://github.com/Krlss/rift-draft'
 
@@ -73,16 +101,7 @@ function RoleIcon({ pos, size = 16, className }: { pos: number; size?: number; c
   )
 }
 
-const ROLE_LABEL: Record<string, string> = {
-  player_blue_1: 'Azul · Top',    player_blue_2: 'Azul · Jungla',
-  player_blue_3: 'Azul · Mid',    player_blue_4: 'Azul · Bot',
-  player_blue_5: 'Azul · Support',
-  player_red_1:  'Rojo · Top',    player_red_2:  'Rojo · Jungla',
-  player_red_3:  'Rojo · Mid',    player_red_4:  'Rojo · Bot',
-  player_red_5:  'Rojo · Support',
-  coach_blue: 'Coach Azul', coach_red: 'Coach Rojo',
-  spectator: 'Espectador',  admin: 'Administrador',
-}
+
 
 const ROLE_COLOR: Record<string, string> = {
   player_blue_1: 'var(--color-blue-team)', player_blue_2: 'var(--color-blue-team)',
@@ -194,7 +213,7 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
         {tab === 'create' && (
           <div className={styles.createConfig}>
             <div className={styles.roomIdDisplay}>
-              <span className={styles.roomIdLabel}>Código de sala</span>
+              <span className={styles.roomIdLabel}>{t.lobby.roomCode}</span>
               <div className={styles.roomIdValueWrap}>
                 <span className={styles.roomIdValue}>
                   {showLobbyCode ? newRoomId : '••••••'}
@@ -215,23 +234,23 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
             </div>
             <div className={styles.fieldRow}>
               <div className={styles.fieldGroup}>
-                <label className={styles.fieldLabel}>Modo</label>
+                <label className={styles.fieldLabel}>{t.lobby.draftMode}</label>
                 <div className={styles.modeSelector}>
                   {(['standard', 'fearless'] as DraftMode[]).map(m => (
                     <button key={m} className={`${styles.modeBtn} ${draftMode === m ? styles.modeBtnActive : ''}`}
                       onClick={() => setDraftMode(m)}>
-                      {m === 'standard' ? '🏆 Estándar' : '💀 Fearless'}
+                      {m === 'standard' ? `🏆 ${t.lobby.standardDraft}` : `💀 ${t.lobby.fearlessDraft}`}
                     </button>
                   ))}
                 </div>
               </div>
               <div className={styles.fieldGroup}>
-                <label className={styles.fieldLabel}>Timer (seg)</label>
+                <label className={styles.fieldLabel}>{t.lobby.timerPerAction}</label>
                 <input type="number" className="input" value={timer} onChange={e => setTimer(+e.target.value)} min={10} max={90} />
               </div>
               {draftMode === 'fearless' && (
                 <div className={styles.fieldGroup}>
-                  <label className={styles.fieldLabel}>Bo</label>
+                  <label className={styles.fieldLabel}>{t.lobby.totalGames}</label>
                   <input type="number" className="input" value={games} onChange={e => setGames(+e.target.value)} min={1} max={7} />
                 </div>
               )}
@@ -242,7 +261,7 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
         {tab === 'join' && (
           <div className={styles.fieldGroup} style={{ marginBottom: 16 }}>
             <div className={styles.joinCodeLabel}>
-              <label className={styles.fieldLabel}>Código de sala</label>
+              <label className={styles.fieldLabel}>{t.lobby.roomCode}</label>
             </div>
             <div className={styles.joinCodeRow}>
               <input
@@ -276,12 +295,12 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
         {/* Team Slots */}
         <div className={styles.teamsSlots}>
           <div className={styles.teamSlotCol}>
-            <div className={`badge badge-blue ${styles.teamSlotTitle}`}>🔵 Equipo Azul</div>
+            <div className={`badge badge-blue ${styles.teamSlotTitle}`}>{t.draft.blueTeam}</div>
             {renderTeamSlots('blue')}
           </div>
           <div className={styles.teamSlotDivider} />
           <div className={styles.teamSlotCol}>
-            <div className={`badge badge-red ${styles.teamSlotTitle}`}>🔴 Equipo Rojo</div>
+            <div className={`badge badge-red ${styles.teamSlotTitle}`}>{t.draft.redTeam}</div>
             {renderTeamSlots('red')}
           </div>
         </div>
@@ -302,14 +321,14 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
           <button className={`${styles.adminRoleBtn} ${selectedRole === 'admin' ? styles.slotSelected : ''}`}
             onClick={() => setSelectedRole(selectedRole === 'admin' ? null : 'admin')}
             title="Puede iniciar el draft y expulsar jugadores">
-            <span>👑</span><span>Administrador</span>
+            <span>👑</span><span>{t.lobby.roleAdmin.replace(' (sin slot)', '').replace(' (no slot)', '')}</span>
           </button>
         </div>
 
         {/* Name */}
         <div className={styles.fieldGroup} style={{ marginTop: 20 }}>
-          <label className={styles.fieldLabel}>Tu nombre (Summoner Name)</label>
-          <input type="text" className="input" placeholder="Ingresa tu nombre..."
+          <label className={styles.fieldLabel}>{t.lobby.yourName}</label>
+          <input type="text" className="input" placeholder={t.lobby.namePlaceholder}
             value={name} onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()} maxLength={32} />
         </div>
@@ -318,12 +337,12 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
 
         {!selectedRole && (
           <div className={styles.adminHint}>
-            👑 Sin rol seleccionado → entrarás como <strong>Administrador</strong>
+            👑 {t.lobby.roleAdmin.replace(' (sin slot)', '').replace(' (no slot)', '')} →
           </div>
         )}
         {selectedRole && (
           <div className={styles.selectedRolePreview}>
-            Rol: <strong style={{ color: ROLE_COLOR[selectedRole] }}>{ROLE_LABEL[selectedRole]}</strong>
+            Role: <strong style={{ color: ROLE_COLOR[selectedRole] }}>{ROLE_LABEL[selectedRole]}</strong>
             <button className={styles.clearRoleBtn} onClick={() => setSelectedRole(null)}>✕</button>
           </div>
         )}
@@ -331,7 +350,7 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
         <button className={`btn btn-primary btn-lg ${styles.joinBtn}`}
           onClick={handleSubmit}
           disabled={!name.trim() || (tab === 'join' && !joinRoomId.trim())}>
-          {tab === 'create' ? '🚀 Crear Sala' : '🚪 Unirse al Draft'}
+          {tab === 'create' ? `🚀 ${t.lobby.createAndJoin}` : `🚪 ${t.lobby.join}`}
         </button>
       </div>
     </div>
@@ -957,6 +976,8 @@ export default function DraftPage({
   // Use provided dictionary or fall back to English (when accessed via /draft directly)
   const dict = dictProp ?? getDictionary(defaultLocale)
   const t = dict  // shorthand alias
+  // Sync all module-level label arrays to the current locale immediately
+  syncLabels(t)
 
   // ── Identity ──────────────────────────────────────────────────────────
   const [joined, setJoined]             = useState(false)

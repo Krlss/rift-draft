@@ -40,10 +40,16 @@ export function middleware(request: NextRequest) {
     const locale = getLocale(request)
     const url = request.nextUrl.clone()
     url.pathname = `/${locale}${pathname}`
-    return NextResponse.redirect(url)
+    const response = NextResponse.redirect(url)
+    response.headers.set('x-locale', locale)
+    return response
   }
 
-  return NextResponse.next()
+  // Pass locale to root layout via header so it can set lang= correctly
+  const response = NextResponse.next()
+  const currentLocale = pathname.split('/')[1]
+  response.headers.set('x-locale', locales.includes(currentLocale) ? currentLocale : defaultLocale)
+  return response
 }
 
 export const config = {
