@@ -1,0 +1,104 @@
+{
+  "lobby": {
+    "title": "Rift Draft",
+    "subtitle": "Simulador de draft competitivo multijugador para League of Legends",
+    "createTab": "✨ Crear Sala",
+    "joinTab": "🚪 Unirse",
+    "createTitle": "Crear Sala",
+    "joinTitle": "Unirse a Sala",
+    "yourName": "Tu nombre",
+    "namePlaceholder": "Ingresa tu nombre...",
+    "roomCode": "Código de sala",
+    "roomCodePlaceholder": "Ej. ABC123",
+    "draftMode": "Modo de draft",
+    "standardDraft": "Draft Estándar",
+    "fearlessDraft": "Fearless Draft",
+    "timerPerAction": "Tiempo por acción (segundos)",
+    "totalGames": "Total de partidas (Fearless)",
+    "role": "Rol",
+    "roleAdmin": "Admin (sin slot)",
+    "roleSpectator": "Espectador",
+    "roleBlueSide": "Lado Azul",
+    "roleRedSide": "Lado Rojo",
+    "roleCoach": "Coach",
+    "join": "Unirse",
+    "createAndJoin": "Crear y Unirse",
+    "joining": "Uniéndose...",
+    "createRoom": "Crear sala",
+    "selectRole": "Selecciona un rol",
+    "pendingApproval": "⏳ Esperando aprobación...",
+    "denied": "Acceso Denegado",
+    "deniedMsg": "Tu solicitud fue rechazada.",
+    "tryAgain": "Intentar de nuevo",
+    "errorMsg": "Error",
+    "positionTop": "Top",
+    "positionJungle": "Jungla",
+    "positionMid": "Mid",
+    "positionBot": "Bot",
+    "positionSupport": "Support"
+  },
+  "draft": {
+    "blueTeam": "🔵 Equipo Azul",
+    "redTeam": "🔴 Equipo Rojo",
+    "ban": "BAN",
+    "pick": "PICK",
+    "turn": "Turno",
+    "blueTurn": "🔵 Turno",
+    "redTurn": "🔴 Turno",
+    "confirmBan": "Confirmar Ban",
+    "confirmPick": "Confirmar Pick",
+    "searchChampion": "🔍 Buscar campeón...",
+    "waitingForDraft": "Esperando inicio del draft...",
+    "draftCompleted": "✅ Draft Completado",
+    "active": "Activo",
+    "seconds": "s",
+    "fearlessLocked": "Jugado en partidas anteriores",
+    "alreadyUsed": "Ya pickeado/baneado"
+  },
+  "navbar": {
+    "startDraft": "▶ Iniciar",
+    "resetDraft": "↩ Reiniciar",
+    "invite": "📋 Invitar",
+    "stream": "📡 Stream",
+    "chat": "💬 Chat",
+    "players": "👥 Jugadores",
+    "github": "GitHub",
+    "soundOn": "🔊",
+    "soundOff": "🔇"
+  },
+  "chat": {
+    "placeholder": "Mensaje...",
+    "readOnly": "👁️ Solo lectura",
+    "systemLabel": "Sistema"
+  },
+  "players": {
+    "title": "Jugadores Conectados",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "kick": "Expulsar",
+    "approve": "Aprobar",
+    "deny": "Rechazar",
+    "pendingRequests": "Solicitudes pendientes"
+  },
+  "readyCheck": {
+    "title": "⚔️ Ready Check",
+    "subtitle": "Todos los jugadores deben confirmar antes de iniciar",
+    "ready": "✅ ¡Listo!",
+    "waiting": "Esperando...",
+    "iAmReady": "¡Estoy listo!",
+    "startAnyway": "Iniciar de todas formas",
+    "cancelledBy": "Ready check cancelado por"
+  },
+  "stream": {
+    "exit": "✕ Salir"
+  },
+  "loading": {
+    "champions": "Cargando campeones...",
+    "socket": "Conectando al servidor...",
+    "subtitle": "League of Legends Draft Simulator"
+  },
+  "fearless": {
+    "game": "Partida",
+    "of": "de"
+  }
+}

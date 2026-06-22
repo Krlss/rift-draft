@@ -10,6 +10,7 @@ import type {
 } from '@/lib/draft-types'
 import { STANDARD_DRAFT_ORDER } from '@/lib/draft-types'
 import { DraftSounds } from '@/lib/draft-sounds'
+import { getDictionary, defaultLocale, type Dictionary, type Locale } from '@/i18n/dictionaries'
 import styles from './draft.module.css'
 
 // ─── Socket singleton ────────────────────────────────────────────────────
@@ -102,9 +103,10 @@ interface LobbyProps {
   previewParticipants?: Participant[]
   joinError?: string | null
   initialRoomId?: string   // pre-filled from encrypted invite link
+  t: Dictionary
 }
 
-function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomId }: LobbyProps) {
+function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomId, t }: LobbyProps) {
   const [tab, setTab]             = useState<'create' | 'join'>(initialRoomId ? 'join' : 'join')
   const [newRoomId, setNewRoomId] = useState('XXXXXX')
   const [joinRoomId, setJoinRoomId] = useState(initialRoomId ?? '')
@@ -161,8 +163,8 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
       <div className={styles.lobbyCard}>
         <div className={styles.lobbyHeader}>
           <div className={styles.lobbyLogo}>🎯</div>
-          <h1 className={styles.lobbyTitle}>Rift Draft</h1>
-          <p className={styles.lobbySubtitle}>Simulador de draft competitivo multijugador para League of Legends</p>
+          <h1 className={styles.lobbyTitle}>{t.lobby.title}</h1>
+          <p className={styles.lobbySubtitle}>{t.lobby.subtitle}</p>
           <a
             href={GITHUB_URL}
             target="_blank"
@@ -185,8 +187,8 @@ function LobbyScreen({ onJoin, previewParticipants = [], joinError, initialRoomI
         </div>
 
         <div className={styles.tabs}>
-          <button className={`${styles.tab} ${tab === 'create' ? styles.tabActive : ''}`} onClick={() => setTab('create')}>✨ Crear Sala</button>
-          <button className={`${styles.tab} ${tab === 'join'   ? styles.tabActive : ''}`} onClick={() => setTab('join')}>🚪 Unirse</button>
+          <button className={`${styles.tab} ${tab === 'create' ? styles.tabActive : ''}`} onClick={() => setTab('create')}>{t.lobby.createTab}</button>
+          <button className={`${styles.tab} ${tab === 'join'   ? styles.tabActive : ''}`} onClick={() => setTab('join')}>{t.lobby.joinTab}</button>
         </div>
 
         {tab === 'create' && (
@@ -918,9 +920,44 @@ function Chat({ messages, onSend, readOnly }: {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// APP LOADER — shown while champions load + socket connects
+// ─────────────────────────────────────────────────────────────────────────
+function AppLoader({ phase, t }: { phase: 'champions' | 'socket'; t: Dictionary }) {
+  return (
+    <div className={styles.appLoader}>
+      <div className={styles.appLoaderCard}>
+        <div className={styles.appLoaderLogo}>
+          <div className={styles.appLoaderLogoRing} />
+          <span className={styles.appLoaderLogoIcon}>🎯</span>
+        </div>
+        <h1 className={styles.appLoaderTitle}>Rift Draft</h1>
+        <div className={styles.appLoaderBar}>
+          <div className={styles.appLoaderBarFill}
+            style={{ width: phase === 'champions' ? '60%' : '90%' }} />
+        </div>
+        <p className={styles.appLoaderStatus}>
+          {phase === 'champions' ? t.loading.champions : t.loading.socket}
+        </p>
+        <p className={styles.appLoaderSub}>{t.loading.subtitle}</p>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // MAIN DRAFT PAGE
 // ─────────────────────────────────────────────────────────────────────────
-export default function DraftPage() {
+export default function DraftPage({
+  dict: dictProp,
+  locale: localeProp,
+}: {
+  dict?: Dictionary
+  locale?: Locale
+} = {}) {
+  // Use provided dictionary or fall back to English (when accessed via /draft directly)
+  const dict = dictProp ?? getDictionary(defaultLocale)
+  const t = dict  // shorthand alias
+
   // ── Identity ──────────────────────────────────────────────────────────
   const [joined, setJoined]             = useState(false)
   const [roomId, setRoomId]             = useState('')
@@ -951,8 +988,9 @@ export default function DraftPage() {
   const prevActiveRole                  = useRef<string | null>(null)
   const prevStarted                     = useRef(false)
 
-  // ── Champions ─────────────────────────────────────────────────────────
+  // ── Champions + loading ────────────────────────────────────────────────
   const [champions, setChampions]       = useState<ChampionData[]>([])
+  const [champsLoaded, setChampsLoaded] = useState(false)
 
   // ── Stream mode ────────────────────────────────────────────────────────
   const [streamMode, setStreamMode]     = useState(false)
@@ -991,7 +1029,12 @@ export default function DraftPage() {
   }, [])
 
   // Load champions
-  useEffect(() => { getAllChampions().then(d => setChampions(Object.values(d))) }, [])
+  useEffect(() => {
+    getAllChampions().then(d => {
+      setChampions(Object.values(d))
+      setChampsLoaded(true)
+    })
+  }, [])
 
   // Sync sound setting
   useEffect(() => { DraftSounds.setEnabled(soundEnabled) }, [soundEnabled])
@@ -1247,6 +1290,11 @@ export default function DraftPage() {
   )
 
   // ─── RENDER ───────────────────────────────────────────────────────────
+  // Show loader while champions are fetching
+  if (!champsLoaded) return <AppLoader phase="champions" t={t} />
+  // Show loader while socket is connecting (only after joining)
+  if (joined && !connected) return <AppLoader phase="socket" t={t} />
+
   if (!joined) {
     if (joinDenied) return (
       <div className={styles.lobby}>
@@ -1258,7 +1306,7 @@ export default function DraftPage() {
         </div>
       </div>
     )
-    return <LobbyScreen onJoin={handleJoin} previewParticipants={draftState?.participants} joinError={joinError} initialRoomId={initialRoomId} />
+    return <LobbyScreen onJoin={handleJoin} previewParticipants={draftState?.participants} joinError={joinError} initialRoomId={initialRoomId} t={t} />
   }
 
   if (isJoinPending) return <WaitingApprovalScreen onCancel={() => { setJoined(false); setIsJoinPending(false) }} />
@@ -1341,19 +1389,19 @@ export default function DraftPage() {
             {/* Sound toggle */}
             <button className="btn btn-secondary btn-sm"
               onClick={() => setSoundEnabled(v => !v)}
-              title={soundEnabled ? 'Desactivar sonidos' : 'Activar sonidos'}>
-              {soundEnabled ? '🔊' : '🔇'}
+              title={soundEnabled ? 'Mute' : 'Unmute'}>
+              {soundEnabled ? t.navbar.soundOn : t.navbar.soundOff}
             </button>
             <button className="btn btn-secondary btn-sm"
               onClick={() => navigator.clipboard.writeText(makeInviteLink(roomId))}>
-              📋 Invitar
+              {t.navbar.invite}
             </button>
             <a
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
               className={`btn btn-secondary btn-sm ${styles.githubNavBtn}`}
-              title="Ver en GitHub"
+              title="GitHub"
             >
               <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
@@ -1365,7 +1413,7 @@ export default function DraftPage() {
                   .82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07
                   -.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
               </svg>
-              GitHub
+              {t.navbar.github}
             </a>
             <span className={styles.myRoleBadge}>
               <span style={{ color: ROLE_COLOR[myRole] ?? 'var(--text-primary)' }}>{ROLE_LABEL[myRole]}</span>
@@ -1382,7 +1430,7 @@ export default function DraftPage() {
             {draftState && (
               <>
                 {/* Team header */}
-                <div className={`${styles.teamColHeader} ${styles.teamColBlue}`}>🔵 Equipo Azul</div>
+                <div className={`${styles.teamColHeader} ${styles.teamColBlue}`}>{t.draft.blueTeam}</div>
                 {/* Bans row */}
                 <div className={styles.teamColBans}>
                   {draftState.blueBans.map((slot, i) => {
@@ -1445,7 +1493,7 @@ export default function DraftPage() {
                         <div className={`${styles.pickPlayerName} ${isMe ? styles.pickPlayerNameMe : ''}`}>
                           {isMe ? '⭐ ' : ''}{(() => { const r = `player_blue_${i+1}` as DraftRole; return draftState.participants.find(p => p.role === r)?.name ?? `J${i+1}` })()}
                         </div>
-                        {isActive && <div className={styles.activePickIndicator}>🔵 Turno</div>}
+                        {isActive && <div className={styles.activePickIndicator}>{t.draft.blueTurn}</div>}
                       </div>
                     )
                   })}
@@ -1476,8 +1524,8 @@ export default function DraftPage() {
                 )}
               </div>
             )}
-            {draftState?.finished && <div className={styles.finishedBannerCenter}>✅ Draft Completado</div>}
-            {!draftState?.started && draftState && <div className={styles.waitingTextCenter}>Esperando inicio del draft...</div>}
+            {draftState?.finished && <div className={styles.finishedBannerCenter}>{t.draft.draftCompleted}</div>}
+            {!draftState?.started && draftState && <div className={styles.waitingTextCenter}>{t.draft.waitingForDraft}</div>}
 
             {/* Selection preview — shown when active player has selected a champion */}
             {canInteract && draftState && (
@@ -1530,7 +1578,7 @@ export default function DraftPage() {
           <div className={styles.teamCol}>
             {draftState && (
               <>
-                <div className={`${styles.teamColHeader} ${styles.teamColRed}`}>🔴 Equipo Rojo</div>
+                <div className={`${styles.teamColHeader} ${styles.teamColRed}`}>{t.draft.redTeam}</div>
                 <div className={styles.teamColBans}>
                   {draftState.redBans.map((slot, i) => {
                     const isActive = draftState.started && !draftState.finished &&
@@ -1591,7 +1639,7 @@ export default function DraftPage() {
                         <div className={`${styles.pickPlayerName} ${isMe ? styles.pickPlayerNameMe : ''}`}>
                           {isMe ? '⭐ ' : ''}{(() => { const r = `player_red_${i+1}` as DraftRole; return draftState.participants.find(p => p.role === r)?.name ?? `J${i+1}` })()}
                         </div>
-                        {isActive && <div className={styles.activePickIndicator}>🔴 Turno</div>}
+                        {isActive && <div className={styles.activePickIndicator}>{t.draft.redTurn}</div>}
                       </div>
                     )
                   })}
