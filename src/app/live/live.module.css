@@ -1,0 +1,241 @@
+.container {
+  padding: 32px;
+  max-width: 1400px;
+  animation: fadeIn 300ms ease forwards;
+}
+
+.liveHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.liveIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.livePill {
+  background: rgba(91, 196, 190, 0.15);
+  color: var(--color-teal-200);
+  border: 1px solid rgba(91,196,190,0.3);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.gameTimer {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--color-gold-200);
+  text-shadow: 0 0 20px rgba(200,155,60,0.3);
+}
+
+/* Teams Layout */
+.teamsLayout {
+  display: grid;
+  grid-template-columns: 1fr 80px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.team {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.teamTitle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vsColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+  gap: 16px;
+}
+
+.vsText {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-gold-400);
+}
+
+.scoreBlock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.teamScore {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.scoreDash {
+  font-size: 20px;
+  color: var(--text-muted);
+}
+
+/* Player Card */
+.playerCard {
+  display: flex;
+  gap: 12px;
+  background: rgba(13, 18, 37, 0.8);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  transition: all 200ms ease;
+}
+
+.playerCard:hover {
+  border-color: rgba(200,155,60,0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.playerBlue { border-left: 3px solid var(--color-blue-team); }
+.playerRed { border-left: 3px solid var(--color-red-team); }
+
+.champArt {
+  width: 80px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.champArtImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.champArtOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, transparent 50%, rgba(13,18,37,0.9) 100%);
+}
+
+.champLevel {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(0,0,0,0.7);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--color-gold-200);
+}
+
+.playerInfo {
+  flex: 1;
+  padding: 10px 12px 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.playerName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playerChamp {
+  font-size: 11px;
+  color: var(--color-gold-300);
+}
+
+.playerPosition {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.statBlock {
+  text-align: center;
+}
+
+.statValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: 8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statSeparator {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.1);
+}
+
+.items {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.itemIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  border: 1px solid rgba(200,155,60,0.15);
+}
+
+.itemEmpty {
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.08);
+}
+
+.deadOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.deadIcon {
+  font-size: 24px;
+}
